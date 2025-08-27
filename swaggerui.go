@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/url"
 
@@ -26,7 +27,12 @@ func HostSwaggerUI(basePath string, spec *openapi3.T) (MiddlewareFunc, error) {
 		return nil, fmt.Errorf("error joining basepath with openapi.json: %w", err)
 	}
 
-	openapiServer.Handle(swaggerUIPath, http.StripPrefix(basePath, http.FileServer(http.FS(swaggerUI))))
+	swaggerUiSubFS, err := fs.Sub(swaggerUI, "swagger-ui/dist")
+	if err != nil {
+		return nil, fmt.Errorf("error getting swagger ui sub fs: %w", err)
+	}
+
+	openapiServer.Handle(swaggerUIPath, http.StripPrefix(swaggerUIPath, http.FileServer(http.FS(swaggerUiSubFS))))
 	openapiServer.HandleFunc(openApiJsonPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(spec)
