@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -22,17 +23,41 @@ func HostSwaggerUI(basePath string, spec *openapi3.T) (MiddlewareFunc, error) {
 		return nil, fmt.Errorf("error joining basepath with swagger-ui: %w", err)
 	}
 
+	swaggerInitPath, err := url.JoinPath(swaggerUIPath, "/swagger-initializer.js")
+	if err != nil {
+		return nil, fmt.Errorf("error joining path for swagger init: %w", err)
+	}
+
 	openApiJsonPath, err := url.JoinPath(basePath, "/openapi.json")
 	if err != nil {
 		return nil, fmt.Errorf("error joining basepath with openapi.json: %w", err)
 	}
 
-	swaggerUiSubFS, err := fs.Sub(swaggerUI, "swagger-ui/dist")
+	swaggerUISubFS, err := fs.Sub(swaggerUI, "swagger-ui/dist")
 	if err != nil {
 		return nil, fmt.Errorf("error getting swagger ui sub fs: %w", err)
 	}
 
-	openapiServer.Handle(swaggerUIPath, http.StripPrefix(swaggerUIPath, http.FileServer(http.FS(swaggerUiSubFS))))
+	// template the js initialize with the actual openapi spec path
+	openapiServer.HandleFunc(swaggerInitPath, func(w http.ResponseWriter, r *http.Request) {
+		b, err := swaggerUI.ReadFile("swagger-ui/dist/swagger-initializer.js")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+			return
+		}
+		t, err := template.New("init").Parse(string(b))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+			return
+		}
+
+		t.Execute(w, map[string]any{
+			"PathToSpec": openApiJsonPath,
+		})
+	})
+	openapiServer.Handle(swaggerUIPath, http.StripPrefix(swaggerUIPath, http.FileServer(http.FS(swaggerUISubFS))))
 	openapiServer.HandleFunc(openApiJsonPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(spec)
