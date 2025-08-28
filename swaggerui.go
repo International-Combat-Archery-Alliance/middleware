@@ -12,13 +12,13 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-//go:embed swagger-ui/dist/*
+//go:embed swagger-ui/dist
 var swaggerUI embed.FS
 
 func HostSwaggerUI(basePath string, spec *openapi3.T) (MiddlewareFunc, error) {
 	openapiServer := http.NewServeMux()
 
-	swaggerUIPath, err := url.JoinPath(basePath, "/swagger-ui")
+	swaggerUIPath, err := url.JoinPath(basePath, "/swagger-ui/")
 	if err != nil {
 		return nil, fmt.Errorf("error joining basepath with swagger-ui: %w", err)
 	}
