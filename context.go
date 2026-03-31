@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	ctxRequestIdKey = "REQUEST_ID"
-	ctxLoggerKey    = "LOGGER"
-	ctxJWTKey       = "JWT"
+	ctxRequestIdKey      = "REQUEST_ID"
+	ctxLoggerKey         = "LOGGER"
+	ctxJWTKey            = "JWT"
+	ctxRefreshTokenIDKey = "REFRESH_TOKEN_ID"
 )
 
 func CtxWithRequestId(ctx context.Context, requestId uuid.UUID) context.Context {
@@ -51,4 +52,19 @@ func GetJWTFromCtx(ctx context.Context) (auth.AuthToken, bool) {
 	}
 	token, ok := v.(auth.AuthToken)
 	return token, ok
+}
+
+// CtxWithRefreshTokenID stores a refresh token ID in the context
+func CtxWithRefreshTokenID(ctx context.Context, tokenID string) context.Context {
+	return context.WithValue(ctx, ctxRefreshTokenIDKey, tokenID)
+}
+
+// GetRefreshTokenIDFromCtx retrieves a refresh token ID from the context
+func GetRefreshTokenIDFromCtx(ctx context.Context) (string, bool) {
+	v := ctx.Value(ctxRefreshTokenIDKey)
+	if v == nil {
+		return "", false
+	}
+	tokenID, ok := v.(string)
+	return tokenID, ok
 }
