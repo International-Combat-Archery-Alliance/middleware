@@ -5,27 +5,40 @@ import (
 	"log/slog"
 
 	"github.com/International-Combat-Archery-Alliance/auth"
-	"github.com/google/uuid"
 )
 
 const (
-	ctxRequestIdKey      = "REQUEST_ID"
-	ctxLoggerKey         = "LOGGER"
-	ctxJWTKey            = "JWT"
+	ctxTraceIDKey       = "TRACE_ID"
+	ctxSpanIDKey        = "SPAN_ID"
+	ctxLoggerKey        = "LOGGER"
+	ctxJWTKey           = "JWT"
 	ctxRefreshTokenIDKey = "REFRESH_TOKEN_ID"
 )
 
-func CtxWithRequestId(ctx context.Context, requestId uuid.UUID) context.Context {
-	return context.WithValue(ctx, ctxRequestIdKey, requestId)
+func CtxWithTraceID(ctx context.Context, traceID string) context.Context {
+	return context.WithValue(ctx, ctxTraceIDKey, traceID)
 }
 
-func GetRequestIdFromCtx(ctx context.Context) (uuid.UUID, bool) {
-	v := ctx.Value(ctxRequestIdKey)
+func GetTraceIDFromCtx(ctx context.Context) (string, bool) {
+	v := ctx.Value(ctxTraceIDKey)
 	if v == nil {
-		return uuid.UUID{}, false
+		return "", false
 	}
-	id, ok := v.(uuid.UUID)
-	return id, ok
+	traceID, ok := v.(string)
+	return traceID, ok
+}
+
+func CtxWithSpanID(ctx context.Context, spanID string) context.Context {
+	return context.WithValue(ctx, ctxSpanIDKey, spanID)
+}
+
+func GetSpanIDFromCtx(ctx context.Context) (string, bool) {
+	v := ctx.Value(ctxSpanIDKey)
+	if v == nil {
+		return "", false
+	}
+	spanID, ok := v.(string)
+	return spanID, ok
 }
 
 func CtxWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
