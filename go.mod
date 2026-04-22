@@ -5,11 +5,12 @@ go 1.24.6
 require (
 	github.com/International-Combat-Archery-Alliance/auth v0.2.0
 	github.com/getkin/kin-openapi v0.133.0
-	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
+	go.opentelemetry.io/otel/trace v1.39.0
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.22.4 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -20,4 +21,5 @@ require (
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/woodsbury/decimal128 v1.3.0 // indirect
+	go.opentelemetry.io/otel v1.39.0 // indirect
 )
