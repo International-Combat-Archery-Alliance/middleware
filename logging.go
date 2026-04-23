@@ -33,7 +33,7 @@ func AccessLogging(baseLogger *slog.Logger) MiddlewareFunc {
 			// process the request
 			next.ServeHTTP(loggingRW, r.WithContext(ctx))
 
-			attrs := []slog.Attr{
+			logger.LogAttrs(r.Context(), slog.LevelInfo, "Access log",
 				slog.String("latency", formatDuration(time.Since(start))),
 				slog.Int64("request-content-length", r.ContentLength),
 				slog.Int("resp-body-size", loggingRW.responseSize),
@@ -41,16 +41,7 @@ func AccessLogging(baseLogger *slog.Logger) MiddlewareFunc {
 				slog.String("method", r.Method),
 				slog.Int("status-code", loggingRW.statusCode),
 				slog.String("path", r.URL.Path),
-			}
-
-			if traceID, ok := GetTraceIDFromCtx(ctx); ok {
-				attrs = append(attrs, slog.String("trace_id", traceID))
-			}
-			if spanID, ok := GetSpanIDFromCtx(ctx); ok {
-				attrs = append(attrs, slog.String("span_id", spanID))
-			}
-
-			logger.LogAttrs(r.Context(), slog.LevelInfo, "Access log", attrs...)
+			)
 		})
 	}
 }
